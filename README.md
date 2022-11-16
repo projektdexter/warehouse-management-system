@@ -1,13 +1,39 @@
-# warehouse_picking
-A set of functions that can be used for picking items in a warehouse.
+# Warehouse Management System
+This is an end-to-end solution for operating a warehouse. This solution focusses on two aspects 
+1. cost 
+2. throughput 
 
-### Single Order Picking
+Warehouse operations can roughly be divided into three heads 
+1. receiving/storage/inbound 
+2. order picking and packing 
+3. dispatch/outbound
 
-One order is assigned to one picker robot
+I would like to point out is that this WMS assumes that robots are used for put-away and order picking. Nonetheless if a warehouse uses human pickers, the solution will run just fine (except that drone management function which has to be removed). 
 
-We instanciate the problem with a warehouse with 100 SKUs. The system monitors the inventory level of the SKUs and assigns a picker robot to the order. Once the order is successfully picked, inventory level is updated. 
+### Receiving/inbound 
+During this stage a truck unloads the merchandise in the receiving docs. The physical inventory is matched with the PO. If physical inventory matches PO quantity, the system will accept the order and assign robots for put-away task. If the physical inventory does not match the PO quantity the system will store the gap in product catalog and balance the difference when the next PO is released.
 
-For routing, the [vehicle routing problem](https://github.com/projektdexter/VehicleRoutingProblem) code is used.
+### Order picking and packing
+In the stage the outbound order list is consolidated for a time t and robots are assigned for the picking task. Once the order is picked, the system matches the pick quantity and order quantity. If the pick quantity matches order quantity the system accepts the picked order and prepares for dispatch. Else, the system raises an alert to user.
+Inside order picking you will find three strategies:
+1. **Single order picking**: An individual robot is assigned to each order. For e.g., if we have 10 orders to pick, the system will assign 10 robots for the task.
+2. **Batch picking**: Multiple orders are club together and a set of robots are assigned for the full batch of orders.  
+3. **Zone picking**: First the warehouse is divided into n zones. Multiple batches of outbound orders is created. Robots are assigned to each zone for picking the items falling in each zones. The order is then consolidated from all the n zones and dispatched.
+4. **Wave picking**: All outbound orders can be divided into n waves. These waves are then executed one after the other or concurrently by assigning the robots for the picking task. 
+
+For robot routing, the [vehicle routing problem](https://github.com/projektdexter/VehicleRoutingProblem) code is used.
+
+### Outbound 
+In this stage the system first calculates the number of vehicles needed, their routes and schedule. The system will then assign robots for loading the outbound vehicles. 
+### Inventory management 
+The system uses continuous review for inventory management. Every time an inbound or outbound takes place, the system will re-calculate the inventor level for each item. If the inventory level is below a certain threshold, this function will allow users to automate PO generation. 
+### Robot management 
+This function operates continuously and manages assignment and battery of robots in the warehouse. 
+### Dock management
+This function manages assignment for inbound & outbound docks
+
+### Other warehouse operations
+Other warehousing tasks like audit, inventory count, demand planning etc. are not covered in this solution. Nonetheless I would like to point out that these are fairly basic tasks which can be formulated with little effort.
 
 ## Example
 
